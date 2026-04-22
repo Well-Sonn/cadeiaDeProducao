@@ -1,41 +1,71 @@
 # 🏗️ Arquitetura do Sistema Distribuído
 
-## Simulação de Fábrica, Lojas e Clientes (Java + Sockets)
+## Fábrica • Loja • Cliente (Java + Sockets + Concorrência)
 
 ---
 
 # 📌 Visão Geral
 
-O sistema simula uma cadeia de produção e comercialização de veículos distribuída em dois programas principais:
+O sistema é composto por **3 programas independentes**:
 
-* 🏭 **FÁBRICA** → Servidor (responsável pela produção)
-* 🏪 **LOJAS** → Clientes (responsáveis pela venda)
-
-A comunicação será feita via **Sockets TCP**, seguindo o modelo **cliente-servidor**.
+* 🏭 **FÁBRICA (Servidor)** → produz veículos
+* 🏪 **LOJA (Cliente + Servidor)** → intermedia vendas
+* 👤 **CLIENTE (Cliente)** → compra veículos
 
 ---
 
 # 🧭 Arquitetura Geral
 
-```
-              ┌────────────────────┐
-              │      LOJA 1        │
-              └────────┬───────────┘
-                       │
-              ┌────────▼───────────┐
-              │                    │
-              │      FÁBRICA       │
-              │     (SERVER)       │
-              │                    │
-              └────────▲───────────┘
-                       │
-              ┌────────┴───────────┐
-              │      LOJA 2        │
-              └────────────────────┘
+```mermaid
+graph LR
+
+    Cliente -->|TCP| Loja
+    Loja -->|TCP| Fabrica
+
+    subgraph CLIENTE
+        C1[ClienteMain.java]
+        C2[ClienteThread.java]
+        C3[GaragemCliente.java]
+    end
+
+    subgraph LOJA
+        L1[StoreMain.java]
+        L2[ServerSocketClientes.java]
+        L3[ClientSocketFactory.java]
+        L4[EsteiraLoja.java]
+        L5[GerenciadorPedidos.java]
+    end
+
+    subgraph FABRICA
+        F1[FactoryMain.java]
+        F2[ServerSocketFactory.java]
+        F3[EsteiraProducao.java]
+        F4[EstacaoProducao.java]
+        F5[Funcionario.java]
+    end
 ```
 
-* A fábrica fica **sempre ativa**, aguardando conexões.
-* As lojas conectam e fazem requisições sob demanda.
+---
+
+# 🔁 Fluxo do Sistema
+
+```mermaid
+sequenceDiagram
+    participant C as Cliente
+    participant L as Loja
+    participant F as Fábrica
+
+    C->>L: BUY_VEHICLE
+    L->>L: Verifica estoque
+
+    alt Tem veículo
+        L-->>C: SOLD
+    else Sem veículo
+        L->>F: REQUEST_VEHICLE
+        F-->>L: OK + veículo
+        L-->>C: SOLD
+    end
+```
 
 ---
 
@@ -43,184 +73,100 @@ A comunicação será feita via **Sockets TCP**, seguindo o modelo **cliente-ser
 
 ## 📌 Responsabilidades
 
-* Produzir veículos
-* Gerenciar estoque de peças
-* Controlar esteiras
+* Produzir veículos (threads)
+* Gerenciar estoque de peças (500)
+* Controlar esteira (buffer 40)
 * Atender requisições das lojas
 * Enviar veículos via socket
-* Gerar logs
 
 ---
 
-## 🔧 Componentes Internos
+## 🔧 Componentes
 
-### 1. Controle de Peças
-
-* Capacidade máxima: **500 peças**
-* Controle via **Semáforo**
-
----
-
-### 2. Estações de Produção
-
-* 4 estações
-* Cada estação possui:
-
-  * 5 funcionários
-  * Estrutura circular (problema dos filósofos)
-
-#### ⚠️ Regra:
-
-Um funcionário precisa de **2 ferramentas (esquerda + direita)** para produzir.
+* `FactoryMain.java`
+* `ServerSocketFactory.java`
+* `EsteiraProducao.java`
+* `EstacaoProducao.java`
+* `Funcionario.java`
+* `ControleFerramentas.java` (filósofos)
 
 ---
 
-### 3. Esteira de Produção
+## ⚙️ Concorrência
 
-* Buffer circular
-* Capacidade: **40 veículos**
-* Controle com semáforos:
+* Semáforos:
 
-  * `empty` (espaço disponível)
-  * `full` (itens disponíveis)
-  * `mutex` (exclusão mútua)
+  * Estoque de peças
+  * Esteira
+* Problema dos filósofos:
 
----
-
-### 4. Servidor Socket
-
-* Porta definida (ex: `12345`)
-* Aceita múltiplas conexões
-* Cada loja = 1 thread
+  * Cada funcionário precisa de 2 ferramentas
 
 ---
 
-## 🔁 Fluxo da Fábrica
+# 🏪 LOJA (Intermediário Inteligente)
 
-```
-[Produção] → [Esteira] → [Requisição Loja] → [Envio via Socket]
-```
+## 📌 Responsabilidades
 
-1. Funcionário produz veículo
-2. Veículo entra na esteira
-3. Loja solicita veículo
-4. Fábrica remove da esteira
-5. Envia dados via socket
+* Conectar na fábrica
+* Receber requisições dos clientes
+* Gerenciar estoque próprio
+* Solicitar veículos à fábrica
+* Entregar veículos aos clientes
 
 ---
 
-## 📦 Estrutura de Dados
+## 🔧 Componentes
 
-```java
-class Veiculo {
-    int id;
-    String cor;        // RED, GREEN, BLUE
-    String tipo;       // SUV, SEDAN
-    int idEstacao;
-    int idFuncionario;
+* `StoreMain.java`
+* `ServerSocketClientes.java` → recebe clientes
+* `ClientSocketFactory.java` → conecta na fábrica
+* `EsteiraLoja.java` → buffer próprio
+* `GerenciadorPedidos.java`
+
+---
+
+## ⚙️ Concorrência
+
+* Semáforos:
+
+  * Buffer da loja
+  * Clientes concorrentes
+
+---
+
+# 👤 CLIENTE (Programa separado)
+
+## 📌 Responsabilidades
+
+* Conectar na loja
+* Solicitar compra
+* Receber veículo
+* Armazenar na garagem
+
+---
+
+## 🔧 Componentes
+
+* `ClienteMain.java`
+* `ClienteThread.java`
+* `GaragemCliente.java`
+
+---
+
+# 🔌 Comunicação (Sockets)
+
+## 📡 1. Cliente → Loja
+
+```json
+{
+  "action": "BUY_VEHICLE"
 }
 ```
 
 ---
 
-## 🧾 Logs da Fábrica
-
-### Log de Produção
-
-* ID veículo
-* Cor
-* Tipo
-* Estação
-* Funcionário
-* Posição na esteira
-
----
-
-### Log de Venda
-
-* Todos os dados acima +
-* ID da loja
-* Posição na esteira da loja
-
----
-
-# 🏪 LOJAS (Cliente)
-
-## 📌 Responsabilidades
-
-* Conectar na fábrica
-* Solicitar veículos
-* Armazenar veículos
-* Atender clientes
-* Gerar logs
-
----
-
-## 🔧 Componentes Internos
-
-### 1. Cliente Socket
-
-* Conecta na fábrica
-* Envia requisições
-* Recebe veículos
-
----
-
-### 2. Esteira da Loja
-
-* Buffer circular próprio
-* Controle com semáforos
-
----
-
-### 3. Clientes (Threads)
-
-* Total: **20 threads**
-* Cada cliente:
-
-  * Escolhe loja aleatoriamente
-  * Compra múltiplos veículos
-
----
-
-## 🔁 Fluxo da Loja
-
-```
-[Cliente] → [Loja] → [Fábrica] → [Loja] → [Cliente]
-```
-
-1. Cliente solicita compra
-2. Loja verifica estoque
-3. Se vazio → solicita à fábrica
-4. Recebe veículo
-5. Armazena na esteira
-6. Entrega ao cliente
-
----
-
-## 🧾 Logs da Loja
-
-### Log de Recebimento
-
-* Dados completos do veículo
-* Origem da fábrica
-
----
-
-### Log de Venda
-
-* Dados do veículo
-* ID do cliente
-
----
-
-# 🔌 Protocolo de Comunicação (ESSENCIAL)
-
-## 📡 Padrão: JSON
-
----
-
-## 📤 Loja → Fábrica
+## 📡 2. Loja → Fábrica
 
 ```json
 {
@@ -230,9 +176,9 @@ class Veiculo {
 
 ---
 
-## 📥 Fábrica → Loja
+## 📥 Respostas
 
-### Sucesso
+### Fábrica → Loja
 
 ```json
 {
@@ -249,6 +195,17 @@ class Veiculo {
 
 ---
 
+### Loja → Cliente
+
+```json
+{
+  "status": "SOLD",
+  "veiculo": { ... }
+}
+```
+
+---
+
 ### Sem estoque
 
 ```json
@@ -259,35 +216,54 @@ class Veiculo {
 
 ---
 
+# 📦 Modelo de Dados (COMPARTILHADO)
+
+```java
+class Veiculo {
+    int id;
+    String cor;
+    String tipo;
+    int idEstacao;
+    int idFuncionario;
+}
+```
+
+⚠️ **IMPORTANTE:**
+Todos os programas devem usar a **mesma estrutura de dados**
+
+---
+
 # 🔒 Controle de Concorrência
 
-## ✔️ Obrigatório: usar Semáforos
+## ✔️ Fábrica
 
----
-
-## 🏭 Fábrica
-
+* Produção concorrente
 * Controle de peças
 * Controle da esteira
-* Controle das ferramentas (filósofos)
 
 ---
 
-## 🏪 Loja
+## ✔️ Loja
 
-* Controle da esteira
-* Controle de acesso dos clientes
+* Múltiplos clientes simultâneos
+* Controle de buffer
+
+---
+
+## ✔️ Cliente
+
+* Threads simulando usuários
 
 ---
 
 # ⚠️ Problemas Clássicos
 
-## 🍽️ Jantar dos Filósofos (Adaptado)
+## 🍽️ Jantar dos Filósofos
 
-Solução recomendada:
+* Aplicado aos funcionários
+* Solução:
 
-* Sempre pegar ferramenta **menor ID primeiro**
-* Evita deadlock
+  * Ordem fixa de aquisição de ferramentas
 
 ---
 
@@ -299,78 +275,109 @@ Solução recomendada:
 
 ---
 
+# 🧾 Logs
+
+## 🏭 Fábrica
+
+* Produção
+* Venda para loja
+
+---
+
+## 🏪 Loja
+
+* Recebimento
+* Venda para cliente
+
+---
+
+## 👤 Cliente
+
+* Histórico de compras
+
+---
+
 # 🤝 Contrato entre Desenvolvedores
 
-## 🔑 Definir antes de integrar:
+Definir obrigatoriamente:
 
-* Porta (ex: 12345)
+* Porta da fábrica (ex: 12345)
+* Porta da loja (ex: 12346)
 * Estrutura JSON
-* Nome das ações:
-
-  * `REQUEST_VEHICLE`
-  * `OK`
-  * `WAIT`
-* Estrutura da classe `Veiculo`
+* Nome das ações
+* Classe `Veiculo`
 
 ---
 
 # 🚀 Etapas de Desenvolvimento
 
-## 🏭 FÁBRICA
+## 🏭 Fábrica
 
-1. Implementar produção (threads)
-2. Implementar semáforos
-3. Implementar esteira
-4. Implementar socket server
-5. Integrar tudo
+1. Produção com threads
+2. Semáforos
+3. Buffer
+4. Socket server
 
 ---
 
-## 🏪 LOJA
+## 🏪 Loja
 
-1. Implementar cliente socket
-2. Implementar esteira
-3. Implementar clientes (threads)
-4. Integrar tudo
+1. Server de clientes
+2. Cliente da fábrica
+3. Buffer
+4. Integração
+
+---
+
+## 👤 Cliente
+
+1. Threads
+2. Conexão com loja
+3. Recebimento de veículos
 
 ---
 
 # 🧪 Estratégia de Teste
 
-## ✔️ Etapa 1 (Mock)
+## ✔️ Etapa 1
 
-* Fábrica envia veículo fixo
-* Loja recebe e imprime
+* Fábrica responde com veículo fixo
 
 ---
 
 ## ✔️ Etapa 2
 
-* Testar múltiplas lojas
+* Loja conecta e recebe
 
 ---
 
 ## ✔️ Etapa 3
 
-* Integrar clientes (threads)
+* Cliente compra da loja
+
+---
+
+## ✔️ Etapa 4
+
+* Teste com múltiplos clientes
 
 ---
 
 # 🔥 Boas Práticas
 
-* Usar logs detalhados
-* Validar dados recebidos
+* Separar responsabilidades
+* Validar mensagens
 * Tratar exceções de socket
-* Separar bem responsabilidades (SRP)
+* Usar logs detalhados
 
 ---
 
 # 📌 Resumo Final
 
-* Arquitetura distribuída
-* Comunicação via socket
+* Arquitetura distribuída com 3 camadas
+* Comunicação via sockets
 * Concorrência com semáforos
-* Problemas clássicos resolvidos
-* Integração baseada em contrato
+* Loja como intermediário central
+* Sistema escalável e realista
 
 ---
