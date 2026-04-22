@@ -1,72 +1,78 @@
 ```mermaid
-graph LR
+graph TD
 
     %% =========================
-    %% PROGRAMA FÁBRICA
+    %% CLIENTE
     %% =========================
-    A[FactoryMain.java] --> B[production/]
-    B --> EstacaoProducao.java
-    B --> Funcionario.java
-    B --> ControleFerramentas.java
-
-    A --> C[buffer/]
-    C --> EsteiraProducao.java
-    C --> ControleEstoque.java
-
-    A --> D[socket/]
-    D --> ServerSocketFactory.java
-    D --> ClientHandler.java
-    D --> ProtocoloFactory.java
-
-    A --> E[model/]
-    E --> Veiculo.java
-
-    A --> F[logs/]
-    F --> LogProducao.java
-    F --> LogVenda.java
+    subgraph CLIENTE
+        C1[ClienteMain.java]
+        C2[ClienteThread.java]
+        C3[GaragemCliente.java]
+    end
 
     %% =========================
-    %% PROGRAMA LOJA
+    %% LOJA
     %% =========================
-    G[StoreMain.java] --> H[socket/]
-    H --> ClientSocketStore.java
-    H --> ProtocoloStore.java
-
-    G --> I[buffer/]
-    I --> EsteiraLoja.java
-
-    G --> J[clientes/]
-    J --> ClienteThread.java
-
-    G --> K[model/]
-    K --> Veiculo.java
-
-    G --> L[logs/]
-    L --> LogRecebimento.java
-    L --> LogVendaCliente.java
+    subgraph LOJA
+        L1[StoreMain.java]
+        L2[ServerSocketClientes.java]
+        L3[ClientSocketFactory.java]
+        L4[EsteiraLoja.java]
+        L5[GerenciadorPedidos.java]
+    end
 
     %% =========================
-    %% COMUNICAÇÃO
+    %% FABRICA
     %% =========================
-    D -->|TCP Socket| H
+    subgraph FABRICA
+        F1[FactoryMain.java]
+        F2[ServerSocketFactory.java]
+        F3[EsteiraProducao.java]
+        F4[EstacaoProducao.java]
+        F5[Funcionario.java]
+        F6[ControleFerramentas.java]
+    end
 
     %% =========================
-    %% CLASSES VISUAIS
+    %% FLUXO INTERNO CLIENTE
     %% =========================
-    classDef factory fill:#f9c74f,stroke:#f9844a,stroke-width:2px,color:#fff;
-    classDef store fill:#90be6d,stroke:#43aa8b,stroke-width:2px,color:#fff;
-    classDef socket fill:#577590,stroke:#4d908e,stroke-width:2px,color:#fff;
-    classDef buffer fill:#277da1,stroke:#577590,stroke-width:2px,color:#fff;
-    classDef model fill:#f94144,stroke:#f3722c,stroke-width:2px,color:#fff;
-    classDef logs fill:#6a4c93,stroke:#8e7dbe,stroke-width:2px,color:#fff;
+    C1 --> C2
+    C2 --> C3
 
     %% =========================
-    %% APLICAÇÃO DAS CLASSES
+    %% FLUXO INTERNO LOJA
     %% =========================
-    class A,B,C,D,E,F factory;
-    class G,H,I,J,K,L store;
-    class D,H socket;
-    class C,I buffer;
-    class E,K model;
-    class F,L logs;
+    L1 --> L2
+    L1 --> L3
+    L1 --> L4
+    L1 --> L5
+
+    %% =========================
+    %% FLUXO INTERNO FABRICA
+    %% =========================
+    F1 --> F2
+    F1 --> F3
+    F1 --> F4
+    F4 --> F5
+    F5 --> F6
+
+    %% =========================
+    %% COMUNICAÇÃO ENTRE SISTEMAS
+    %% =========================
+    C2 -->|BUY_VEHICLE| L2
+    L3 -->|REQUEST_VEHICLE| F2
+
+    F2 -->|VEHICLE DATA| L3
+    L2 -->|SOLD| C2
+
+    %% =========================
+    %% ESTILOS
+    %% =========================
+    classDef cliente fill:#f94144,stroke:#f3722c,color:#fff;
+    classDef loja fill:#90be6d,stroke:#43aa8b,color:#fff;
+    classDef fabrica fill:#577590,stroke:#4d908e,color:#fff;
+
+    class C1,C2,C3 cliente;
+    class L1,L2,L3,L4,L5 loja;
+    class F1,F2,F3,F4,F5,F6 fabrica;
 ```
