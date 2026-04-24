@@ -6,6 +6,8 @@ import producao.controleFerramentas;
 import producao.funcionario;
 import java.util.concurrent.Semaphore;
 
+import socket.ServerSocketFactory;
+
 public class factoryMain {
 
     public static void main(String[] args) {
@@ -22,5 +24,8 @@ public class factoryMain {
                 new funcionario(func, estacao, esteira, estoque, controle, esteiraPecas).start();
             }
         }
+
+        ServerSocketFactory server = new ServerSocketFactory(12345, esteira);
+        server.start();
     }
 }

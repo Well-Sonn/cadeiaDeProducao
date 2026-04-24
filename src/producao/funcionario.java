@@ -66,7 +66,7 @@ public class funcionario extends Thread {
                         posicaoEsteira);
                 log.salvarJson();
 
-                System.out.println("🔧 Funcionario " + id + " | Estação " + idEstacao + " produziu veículo " + v.getId());
+                System.out.println("Funcionario " + id + " | Estação " + idEstacao + " produziu veículo " + v.getId());
                 System.out.println();
 
                 // libera ferramentas
