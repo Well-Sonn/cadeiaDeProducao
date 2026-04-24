@@ -5,44 +5,44 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class ClientSocketFactory implements Runnable {
-    private final String host;
-    private final int port;
+    private final String endereco;
+    private final int porta;
     private final EsteiraLoja esteira;
     private final LoggerUtil logger;
-    private final String storeId;
-    private final int batchSize;
-    private volatile boolean running = true;
+    private final String idLoja;
+    private final int tamanhoLote;
+    private volatile boolean rodando = true;
 
-    public ClientSocketFactory(String host, int port, EsteiraLoja esteira, LoggerUtil logger, String storeId, int batchSize) {
-        this.host = host;
-        this.port = port;
+    public ClientSocketFactory(String endereco, int porta, EsteiraLoja esteira, LoggerUtil logger, String idLoja, int tamanhoLote) {
+        this.endereco = endereco;
+        this.porta = porta;
         this.esteira = esteira;
         this.logger = logger;
-        this.storeId = storeId;
-        this.batchSize = Math.max(1, batchSize);
+        this.idLoja = idLoja;
+        this.tamanhoLote = Math.max(1, tamanhoLote);
     }
 
-    public void shutdown() { running = false; }
+    public void shutdown() { rodando = false; }
 
-    public int requestVehicles(int quantity) {
-        int received = 0;
-        try (Socket socket = new Socket(host, port)) {
-            socket.setSoTimeout(15000);
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            out.flush();
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-            FactoryRequest req = new FactoryRequest(storeId, quantity);
-            out.writeObject(req);
-            out.flush();
-            for (int i = 0; i < quantity; i++) {
-                Object obj = in.readObject();
+    public int solicitarVeiculos(int quantidade) {
+        int recebidos = 0;
+        try (Socket conexao = new Socket(endereco, porta)) {
+            conexao.setSoTimeout(15000);
+            ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
+            saida.flush();
+            ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream());
+            FactoryRequest requisicao = new FactoryRequest(idLoja, quantidade);
+            saida.writeObject(requisicao);
+            saida.flush();
+            for (int i = 0; i < quantidade; i++) {
+                Object obj = entrada.readObject();
                 if (obj == null) break;
-                if (obj instanceof Vehicle) {
-                    Vehicle v = (Vehicle) obj;
+                if (obj instanceof Veiculo) {
+                    Veiculo veiculo = (Veiculo) obj;
                     try {
-                        esteira.put(v);
-                        logger.logRecebimento(v, host + ":" + port);
-                        received++;
+                        esteira.colocar(veiculo);
+                        logger.logRecebimento(veiculo, endereco + ":" + porta);
+                        recebidos++;
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -53,24 +53,24 @@ public class ClientSocketFactory implements Runnable {
                         break;
                     }
                 } else {
-                    // ignore unknown
+                    // ignorar desconhecido
                 }
             }
         } catch (Exception e) {
-            System.err.println("ClientSocketFactory: error connecting to factory: " + e.getMessage());
+            System.err.println("ClientSocketFactory: erro ao conectar na fábrica: " + e.getMessage());
         }
-        return received;
+        return recebidos;
     }
 
     @Override
     public void run() {
-        while (running) {
+        while (rodando) {
             try {
-                int current = esteira.size();
-                if (current < batchSize) {
-                    int needed = batchSize - current;
-                    int got = requestVehicles(needed);
-                    if (got == 0) {
+                int atual = esteira.size();
+                if (atual < tamanhoLote) {
+                    int necessarios = tamanhoLote - atual;
+                    int obtive = solicitarVeiculos(necessarios);
+                    if (obtive == 0) {
                         Thread.sleep(5000);
                     }
                 }

@@ -6,56 +6,56 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class ServerSocketClientes implements Runnable {
-    private final int port;
+    private final int porta;
     private final GerenciadorPedidos gerenciador;
-    private volatile boolean running = true;
-    private ServerSocket server;
+    private volatile boolean rodando = true;
+    private ServerSocket servidor;
 
-    public ServerSocketClientes(int port, GerenciadorPedidos gerenciador) {
-        this.port = port;
+    public ServerSocketClientes(int porta, GerenciadorPedidos gerenciador) {
+        this.porta = porta;
         this.gerenciador = gerenciador;
     }
 
     public void shutdown() {
-        running = false;
+        rodando = false;
         try {
-            if (server != null && !server.isClosed()) server.close();
-        } catch (Exception e) { /* ignore */ }
+            if (servidor != null && !servidor.isClosed()) servidor.close();
+        } catch (Exception e) { /* ignorar */ }
     }
 
     @Override
     public void run() {
-        try (ServerSocket s = new ServerSocket(port)) {
-            this.server = s;
-            System.out.println("ServerSocketClientes: listening on port " + port);
-            while (running) {
-                Socket client = s.accept();
-                new Thread(() -> handleClient(client)).start();
+        try (ServerSocket s = new ServerSocket(porta)) {
+            this.servidor = s;
+            System.out.println("ServerSocketClientes: ouvindo na porta " + porta);
+            while (rodando) {
+                Socket clienteSocket = s.accept();
+                new Thread(() -> handleClient(clienteSocket)).start();
             }
         } catch (Exception e) {
-            if (running) System.err.println("ServerSocketClientes: error: " + e.getMessage());
+            if (rodando) System.err.println("ServerSocketClientes: erro: " + e.getMessage());
         }
     }
 
     private void handleClient(Socket socket) {
-        try (Socket s = socket;
-             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-            out.flush();
-            Object obj = in.readObject();
+        try (Socket conexao = socket;
+             ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
+             ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream())) {
+            saida.flush();
+            Object obj = entrada.readObject();
             if (obj instanceof Pedido) {
                 Pedido pedido = (Pedido) obj;
-                System.out.println("Received pedido: " + pedido);
-                Vehicle vehicle = gerenciador.handlePedido(pedido);
-                out.writeObject(vehicle);
-                out.flush();
+                System.out.println("Pedido recebido: " + pedido);
+                Veiculo vehicle = gerenciador.processarPedido(pedido);
+                saida.writeObject(vehicle);
+                saida.flush();
             } else {
-                System.err.println("Unknown request from client: " + obj);
-                out.writeObject(null);
-                out.flush();
+                System.err.println("Requisição desconhecida do cliente: " + obj);
+                saida.writeObject(null);
+                saida.flush();
             }
         } catch (Exception e) {
-            System.err.println("Error handling client: " + e.getMessage());
+            System.err.println("Erro ao atender cliente: " + e.getMessage());
         }
     }
 }

@@ -1,42 +1,42 @@
 package loja;
 
 public class EsteiraLoja {
-    private final Vehicle[] buffer;
-    private int head = 0, tail = 0, count = 0;
-    private final int capacity;
+    private final Veiculo[] buffer;
+    private int inicio = 0, fim = 0, tamanho = 0;
+    private final int capacidade;
 
-    public EsteiraLoja(int capacity) {
-        this.capacity = capacity;
-        this.buffer = new Vehicle[capacity];
+    public EsteiraLoja(int capacidade) {
+        this.capacidade = capacidade;
+        this.buffer = new Veiculo[capacidade];
     }
 
-    public synchronized void put(Vehicle v) throws InterruptedException {
-        while (count == capacity) {
+    public synchronized void colocar(Veiculo v) throws InterruptedException {
+        while (tamanho == capacidade) {
             wait();
         }
-        buffer[tail] = v;
-        tail = (tail + 1) % capacity;
-        count++;
+        buffer[fim] = v;
+        fim = (fim + 1) % capacidade;
+        tamanho++;
         notifyAll();
     }
 
-    public synchronized Vehicle take() throws InterruptedException {
-        while (count == 0) {
+    public synchronized Veiculo retirar() throws InterruptedException {
+        while (tamanho == 0) {
             wait();
         }
-        Vehicle v = buffer[head];
-        buffer[head] = null;
-        head = (head + 1) % capacity;
-        count--;
+        Veiculo v = buffer[inicio];
+        buffer[inicio] = null;
+        inicio = (inicio + 1) % capacidade;
+        tamanho--;
         notifyAll();
         return v;
     }
 
-    public synchronized int size() { return count; }
-    public synchronized int capacity() { return capacity; }
+    public synchronized int size() { return tamanho; }
+    public synchronized int capacity() { return capacidade; }
 
     @Override
     public synchronized String toString() {
-        return "EsteiraLoja{size=" + count + ",capacity=" + capacity + "}";
+        return "EsteiraLoja{size=" + tamanho + ",capacidade=" + capacidade + "}";
     }
 }

@@ -22,17 +22,17 @@ public class LoggerUtil {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
     }
 
-    public void logRecebimento(Vehicle vehicle, String factoryInfo) {
+    public void logRecebimento(Veiculo vehicle, String factoryInfo) {
         synchronized (lock) {
-            String chain = vehicle.getProductionChain() == null ? "" : String.join(" | ", vehicle.getProductionChain());
-            recebimentoWriter.printf("%s RECEBIDO id=%s model=%s factory=%s chain=%s%n", now(), vehicle.getId(), vehicle.getModel(), factoryInfo, chain);
+            String chain = vehicle.getCadeiaProducao() == null ? "" : String.join(" | ", vehicle.getCadeiaProducao());
+            recebimentoWriter.printf("%s RECEBIDO id=%s modelo=%s fabrica=%s cadeia=%s%n", now(), vehicle.getId(), vehicle.getModelo(), factoryInfo, chain);
         }
     }
 
-    public void logVenda(Vehicle vehicle, Pedido pedido) {
+    public void logVenda(Veiculo veiculo, Pedido pedido) {
         synchronized (lock) {
-            String chain = vehicle.getProductionChain() == null ? "" : String.join(" | ", vehicle.getProductionChain());
-            vendaWriter.printf("%s VENDIDO id=%s model=%s client=%s chain=%s%n", now(), vehicle.getId(), vehicle.getModel(), pedido != null ? pedido.getClientId() : "unknown", chain);
+            String chain = veiculo.getCadeiaProducao() == null ? "" : String.join(" | ", veiculo.getCadeiaProducao());
+            vendaWriter.printf("%s VENDIDO id=%s modelo=%s cliente=%s cadeia=%s%n", now(), veiculo.getId(), veiculo.getModelo(), pedido != null ? pedido.getIdCliente() : "unknown", chain);
         }
     }
 

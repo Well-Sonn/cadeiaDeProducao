@@ -4,15 +4,15 @@ import java.io.Serializable;
 
 public class FactoryRequest implements Serializable {
     private static final long serialVersionUID = 1L;
-    private final String storeId;
-    private final int quantity;
+    private final String idLoja;
+    private final int quantidade;
 
-    public FactoryRequest(String storeId, int quantity) {
-        this.storeId = storeId;
-        this.quantity = quantity;
+    public FactoryRequest(String idLoja, int quantidade) {
+        this.idLoja = idLoja;
+        this.quantidade = quantidade;
     }
-    public String getStoreId() { return storeId; }
-    public int getQuantity() { return quantity; }
+    public String getIdLoja() { return idLoja; }
+    public int getQuantidade() { return quantidade; }
     @Override
-    public String toString() { return "FactoryRequest{storeId="+storeId+",quantity="+quantity+"}"; }
+    public String toString() { return "FactoryRequest{idLoja="+idLoja+",quantidade="+quantidade+"}"; }
 }

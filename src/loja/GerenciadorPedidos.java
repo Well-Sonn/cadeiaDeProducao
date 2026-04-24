@@ -2,25 +2,25 @@ package loja;
 
 public class GerenciadorPedidos {
     private final EsteiraLoja esteira;
-    private final ClientSocketFactory factoryClient;
+    private final ClientSocketFactory clienteFabrica;
     private final LoggerUtil logger;
-    private final String storeId;
+    private final String idLoja;
 
-    public GerenciadorPedidos(EsteiraLoja esteira, ClientSocketFactory factoryClient, LoggerUtil logger, String storeId) {
+    public GerenciadorPedidos(EsteiraLoja esteira, ClientSocketFactory clienteFabrica, LoggerUtil logger, String idLoja) {
         this.esteira = esteira;
-        this.factoryClient = factoryClient;
+        this.clienteFabrica = clienteFabrica;
         this.logger = logger;
-        this.storeId = storeId;
+        this.idLoja = idLoja;
     }
 
-    public Vehicle handlePedido(Pedido pedido) {
+    public Veiculo processarPedido(Pedido pedido) {
         try {
             if (esteira.size() == 0) {
-                factoryClient.requestVehicles(1);
+                clienteFabrica.solicitarVeiculos(1);
             }
-            Vehicle v = esteira.take();
-            logger.logVenda(v, pedido);
-            return v;
+            Veiculo veiculo = esteira.retirar();
+            logger.logVenda(veiculo, pedido);
+            return veiculo;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;

@@ -6,18 +6,18 @@ public class Pedido implements Serializable {
     private static final long serialVersionUID = 1L;
     public enum Type { BUY }
 
-    private final Type type;
-    private final String model;
-    private final String clientId;
+    private final Type tipo;
+    private final String modelo;
+    private final String idCliente;
 
-    public Pedido(Type type, String model, String clientId) {
-        this.type = type;
-        this.model = model;
-        this.clientId = clientId;
+    public Pedido(Type tipo, String modelo, String idCliente) {
+        this.tipo = tipo;
+        this.modelo = modelo;
+        this.idCliente = idCliente;
     }
-    public Type getType() { return type; }
-    public String getModel() { return model; }
-    public String getClientId() { return clientId; }
+    public Type getType() { return tipo; }
+    public String getModelo() { return modelo; }
+    public String getIdCliente() { return idCliente; }
     @Override
-    public String toString() { return "Pedido{" + type + "," + model + "," + clientId + "}"; }
+    public String toString() { return "Pedido{" + tipo + "," + modelo + "," + idCliente + "}"; }
 }

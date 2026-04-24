@@ -10,21 +10,21 @@ public class TestClient {
             System.out.println("Usage: java loja.TestClient <storeHost> <storePort>");
             return;
         }
-        String host = args[0];
-        int port = Integer.parseInt(args[1]);
-        try (Socket s = new Socket(host, port);
-             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-            out.flush();
+        String endereco = args[0];
+        int porta = Integer.parseInt(args[1]);
+        try (Socket conexao = new Socket(endereco, porta);
+             ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
+             ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream())) {
+            saida.flush();
             Pedido pedido = new Pedido(Pedido.Type.BUY, "any", "cliente-1");
-            out.writeObject(pedido);
-            out.flush();
-            Object resp = in.readObject();
-            if (resp instanceof Vehicle) {
-                Vehicle v = (Vehicle) resp;
-                System.out.println("Received vehicle: " + v.getId() + " model=" + v.getModel());
+            saida.writeObject(pedido);
+            saida.flush();
+            Object resp = entrada.readObject();
+            if (resp instanceof Veiculo) {
+                Veiculo v = (Veiculo) resp;
+                System.out.println("Veículo recebido: " + v.getId() + " modelo=" + v.getModelo());
             } else {
-                System.out.println("No vehicle received.");
+                System.out.println("Nenhum veículo recebido.");
             }
         }
     }

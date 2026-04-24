@@ -8,56 +8,56 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MockFactory implements Runnable {
-    private final int port;
-    private volatile boolean running = true;
+    private final int porta;
+    private volatile boolean rodando = true;
 
-    public MockFactory(int port) { this.port = port; }
+    public MockFactory(int porta) { this.porta = porta; }
 
     @Override
     public void run() {
-        try (ServerSocket s = new ServerSocket(port)) {
-            System.out.println("MockFactory listening on " + port);
-            while (running) {
-                Socket client = s.accept();
-                new Thread(() -> handleStoreConnection(client)).start();
+        try (ServerSocket s = new ServerSocket(porta)) {
+            System.out.println("MockFactory ouvindo na porta " + porta);
+            while (rodando) {
+                Socket conexao = s.accept();
+                new Thread(() -> handleStoreConnection(conexao)).start();
             }
         } catch (Exception e) {
-            System.err.println("MockFactory error: " + e.getMessage());
+            System.err.println("MockFactory erro: " + e.getMessage());
         }
     }
 
     private void handleStoreConnection(Socket socket) {
-        try (Socket s = socket;
-             ObjectOutputStream out = new ObjectOutputStream(s.getOutputStream());
-             ObjectInputStream in = new ObjectInputStream(s.getInputStream())) {
-            out.flush();
-            Object req = in.readObject();
+        try (Socket conexao = socket;
+             ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
+             ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream())) {
+            saida.flush();
+            Object req = entrada.readObject();
             if (req instanceof FactoryRequest) {
                 FactoryRequest fr = (FactoryRequest) req;
-                int qty = fr.getQuantity();
-                System.out.println("Factory received request from store=" + fr.getStoreId() + " qty=" + qty);
-                for (int i = 0; i < qty; i++) {
-                    List<String> chain = Arrays.asList("Montagem", "Pintura", "Inspecao");
-                    Vehicle v = new Vehicle("ModeloX", chain);
-                    out.writeObject(v);
-                    out.flush();
+                int quantidade = fr.getQuantidade();
+                System.out.println("Fábrica recebeu requisição da loja=" + fr.getIdLoja() + " qtd=" + quantidade);
+                for (int i = 0; i < quantidade; i++) {
+                    List<String> cadeia = Arrays.asList("Montagem", "Pintura", "Inspecao");
+                    Veiculo veiculo = new Veiculo("ModeloX", cadeia);
+                    saida.writeObject(veiculo);
+                    saida.flush();
                 }
-                out.writeObject("END");
-                out.flush();
+                saida.writeObject("END");
+                saida.flush();
             } else {
-                out.writeObject("NONE");
-                out.flush();
+                saida.writeObject("NONE");
+                saida.flush();
             }
         } catch (Exception e) {
             System.err.println("MockFactory connection error: " + e.getMessage());
         }
     }
 
-    public void shutdown() { running = false; }
+    public void shutdown() { rodando = false; }
 
     public static void main(String[] args) throws Exception {
-        int port = args.length > 0 ? Integer.parseInt(args[0]) : 9000;
-        MockFactory server = new MockFactory(port);
+        int porta = args.length > 0 ? Integer.parseInt(args[0]) : 9000;
+        MockFactory server = new MockFactory(porta);
         new Thread(server).start();
     }
 }
