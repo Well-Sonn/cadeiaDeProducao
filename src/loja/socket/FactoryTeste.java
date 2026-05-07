@@ -1,4 +1,4 @@
-package loja;
+package loja.socket;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,12 +6,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
+import loja.model.Veiculo;
 
-public class MockFactory implements Runnable {
+public class FactoryTeste implements Runnable {
     private final int porta;
     private volatile boolean rodando = true;
 
-    public MockFactory(int porta) { this.porta = porta; }
+    public FactoryTeste(int porta) { this.porta = porta; }
 
     @Override
     public void run() {
@@ -49,7 +50,7 @@ public class MockFactory implements Runnable {
                 saida.flush();
             }
         } catch (Exception e) {
-            System.err.println("MockFactory connection error: " + e.getMessage());
+            System.err.println("Erro de conecao FactoryTeste: " + e.getMessage());
         }
     }
 
@@ -57,7 +58,7 @@ public class MockFactory implements Runnable {
 
     public static void main(String[] args) throws Exception {
         int porta = args.length > 0 ? Integer.parseInt(args[0]) : 9000;
-        MockFactory server = new MockFactory(porta);
+        FactoryTeste server = new FactoryTeste(porta);
         new Thread(server).start();
     }
 }

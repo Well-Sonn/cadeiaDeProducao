@@ -1,4 +1,10 @@
-package loja;
+package loja.main;
+
+import loja.GerenciadorPedidos;
+import loja.buffer.EsteiraLoja;
+import loja.logs.LoggerUtil;
+import loja.socket.ClientSocketFactory;
+import loja.socket.ServerSocketClientes;
 
 public class StoreMain {
     public static void main(String[] args) throws Exception {

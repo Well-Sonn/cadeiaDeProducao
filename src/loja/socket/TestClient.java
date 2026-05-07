@@ -4,6 +4,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import loja.model.Veiculo;
+
 public class TestClient {
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {

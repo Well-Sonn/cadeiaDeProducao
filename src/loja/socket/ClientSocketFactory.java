@@ -1,8 +1,13 @@
-package loja;
+package loja.socket;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+
+import loja.FactoryRequest;
+import loja.buffer.EsteiraLoja;
+import loja.logs.LoggerUtil;
+import loja.model.Veiculo;
 
 public class ClientSocketFactory implements Runnable {
     private final String endereco;

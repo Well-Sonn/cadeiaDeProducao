@@ -1,4 +1,10 @@
-package loja;
+package loja.controle;
+
+import loja.Esteira.EsteiraLoja;
+import loja.logs.LoggerUtil;
+import loja.model.Veiculo;
+import loja.socket.ClientSocketFactory;
+import loja.util.Pedido;
 
 public class GerenciadorPedidos {
     private final EsteiraLoja esteira;
@@ -19,8 +25,9 @@ public class GerenciadorPedidos {
                 clienteFabrica.solicitarVeiculos(1);
             }
             Veiculo veiculo = esteira.retirar();
-            logger.logVenda(veiculo, pedido);
+            logger.logVenda(idLoja, veiculo, pedido);
             return veiculo;
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return null;

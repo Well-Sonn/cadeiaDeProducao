@@ -1,4 +1,6 @@
-package loja;
+package loja.buffer;
+
+import loja.model.Veiculo;
 
 public class EsteiraLoja {
     private final Veiculo[] buffer;

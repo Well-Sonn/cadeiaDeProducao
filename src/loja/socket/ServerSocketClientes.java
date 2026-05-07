@@ -1,9 +1,13 @@
-package loja;
+package loja.socket;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import loja.GerenciadorPedidos;
+import loja.Pedido;
+import loja.model.Veiculo;
 
 public class ServerSocketClientes implements Runnable {
     private final int porta;

@@ -1,4 +1,4 @@
-package loja;
+package loja.logs;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import loja.model.Veiculo;
+import loja.util.Pedido;
 
 public class LoggerUtil {
     private final PrintWriter recebimentoWriter;
@@ -29,10 +32,10 @@ public class LoggerUtil {
         }
     }
 
-    public void logVenda(Veiculo veiculo, Pedido pedido) {
+    public void logVenda(String idLoja, Veiculo veiculo, Pedido pedido) {
         synchronized (lock) {
             String chain = veiculo.getCadeiaProducao() == null ? "" : String.join(" | ", veiculo.getCadeiaProducao());
-            vendaWriter.printf("%s VENDIDO id=%s modelo=%s cliente=%s cadeia=%s%n", now(), veiculo.getId(), veiculo.getModelo(), pedido != null ? pedido.getIdCliente() : "unknown", chain);
+            vendaWriter.printf("%s VENDIDO id=%s modelo=%s cliente=%s cadeia=%s%n", now(), idLoja, veiculo.getId(), veiculo.getModelo(), pedido != null ? pedido.getIdCliente() : "unknown", chain);
         }
     }
 
