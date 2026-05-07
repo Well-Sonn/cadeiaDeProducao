@@ -5,9 +5,9 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import loja.GerenciadorPedidos;
-import loja.Pedido;
+import loja.controle.GerenciadorPedidos;
 import loja.model.Veiculo;
+import loja.util.Pedido;
 
 public class ServerSocketClientes implements Runnable {
     private final int porta;

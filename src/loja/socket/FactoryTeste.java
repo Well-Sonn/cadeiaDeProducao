@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import loja.model.Veiculo;
+import loja.util.FactoryRequest;
 
 public class FactoryTeste implements Runnable {
     private final int porta;

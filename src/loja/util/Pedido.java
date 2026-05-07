@@ -1,4 +1,4 @@
-package loja;
+package loja.util;
 
 import java.io.Serializable;
 

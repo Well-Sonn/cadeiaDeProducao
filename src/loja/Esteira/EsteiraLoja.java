@@ -1,4 +1,4 @@
-package loja.buffer;
+package loja.Esteira;
 
 import loja.model.Veiculo;
 

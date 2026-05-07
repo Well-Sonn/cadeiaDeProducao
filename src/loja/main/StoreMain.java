@@ -1,7 +1,7 @@
 package loja.main;
 
-import loja.GerenciadorPedidos;
-import loja.buffer.EsteiraLoja;
+import loja.Esteira.EsteiraLoja;
+import loja.controle.GerenciadorPedidos;
 import loja.logs.LoggerUtil;
 import loja.socket.ClientSocketFactory;
 import loja.socket.ServerSocketClientes;
