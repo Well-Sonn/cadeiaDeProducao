@@ -5,11 +5,11 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 import loja.Esteira.EsteiraLoja;
-import loja.logs.LoggerUtil;
+import loja.logger.LoggerUtil;
+import loja.model.PedidoFabrica;
 import loja.model.Veiculo;
-import loja.util.FactoryRequest;
 
-public class ClientSocketFactory implements Runnable {
+public class LojaSocketFabrica implements Runnable {
     private final String endereco;
     private final int porta;
     private final EsteiraLoja esteira;
@@ -18,7 +18,7 @@ public class ClientSocketFactory implements Runnable {
     private final int tamanhoLote;
     private volatile boolean rodando = true;
 
-    public ClientSocketFactory(String endereco, int porta, EsteiraLoja esteira, LoggerUtil logger, String idLoja, int tamanhoLote) {
+    public LojaSocketFabrica(String endereco, int porta, EsteiraLoja esteira, LoggerUtil logger, String idLoja, int tamanhoLote) {
         this.endereco = endereco;
         this.porta = porta;
         this.esteira = esteira;
@@ -36,7 +36,7 @@ public class ClientSocketFactory implements Runnable {
             ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
             saida.flush();
             ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream());
-            FactoryRequest requisicao = new FactoryRequest(idLoja, quantidade);
+            PedidoFabrica requisicao = new PedidoFabrica(idLoja, quantidade);
             saida.writeObject(requisicao);
             saida.flush();
             for (int i = 0; i < quantidade; i++) {
@@ -62,7 +62,7 @@ public class ClientSocketFactory implements Runnable {
                 }
             }
         } catch (Exception e) {
-            System.err.println("ClientSocketFactory: erro ao conectar na fábrica: " + e.getMessage());
+            System.err.println("ClienteSocketFabrica: erro ao conectar na fábrica: " + e.getMessage());
         }
         return recebidos;
     }

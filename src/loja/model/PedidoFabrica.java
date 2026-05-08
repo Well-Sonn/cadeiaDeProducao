@@ -1,13 +1,13 @@
-package loja.util;
+package loja.model;
 
 import java.io.Serializable;
 
-public class FactoryRequest implements Serializable {
+public class PedidoFabrica implements Serializable {
     private static final long serialVersionUID = 1L;
     private final String idLoja;
     private final int quantidade;
 
-    public FactoryRequest(String idLoja, int quantidade) {
+    public PedidoFabrica(String idLoja, int quantidade) {
         this.idLoja = idLoja;
         this.quantidade = quantidade;
     }

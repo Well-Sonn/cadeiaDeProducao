@@ -1,8 +1,8 @@
-package loja.util;
+package loja.model;
 
 import java.io.Serializable;
 
-public class Pedido implements Serializable {
+public class PedidoCliente implements Serializable {
     private static final long serialVersionUID = 1L;
     public enum Type { BUY }
 
@@ -10,7 +10,7 @@ public class Pedido implements Serializable {
     private final String modelo;
     private final String idCliente;
 
-    public Pedido(Type tipo, String modelo, String idCliente) {
+    public PedidoCliente(Type tipo, String modelo, String idCliente) {
         this.tipo = tipo;
         this.modelo = modelo;
         this.idCliente = idCliente;

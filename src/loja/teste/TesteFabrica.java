@@ -1,4 +1,4 @@
-package loja.socket;
+package loja.teste;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,14 +6,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
-import loja.model.Veiculo;
-import loja.util.FactoryRequest;
 
-public class FactoryTeste implements Runnable {
+import loja.model.PedidoFabrica;
+import loja.model.Veiculo;
+
+public class TesteFabrica implements Runnable {
     private final int porta;
     private volatile boolean rodando = true;
 
-    public FactoryTeste(int porta) { this.porta = porta; }
+    public TesteFabrica(int porta) { this.porta = porta; }
 
     @Override
     public void run() {
@@ -34,8 +35,8 @@ public class FactoryTeste implements Runnable {
              ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream())) {
             saida.flush();
             Object req = entrada.readObject();
-            if (req instanceof FactoryRequest) {
-                FactoryRequest fr = (FactoryRequest) req;
+            if (req instanceof PedidoFabrica) {
+                PedidoFabrica fr = (PedidoFabrica) req;
                 int quantidade = fr.getQuantidade();
                 System.out.println("Fábrica recebeu requisição da loja=" + fr.getIdLoja() + " qtd=" + quantidade);
                 for (int i = 0; i < quantidade; i++) {
@@ -59,7 +60,7 @@ public class FactoryTeste implements Runnable {
 
     public static void main(String[] args) throws Exception {
         int porta = args.length > 0 ? Integer.parseInt(args[0]) : 9000;
-        FactoryTeste server = new FactoryTeste(porta);
+        TesteFabrica server = new TesteFabrica(porta);
         new Thread(server).start();
     }
 }

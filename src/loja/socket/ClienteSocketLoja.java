@@ -6,16 +6,16 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import loja.controle.GerenciadorPedidos;
+import loja.model.PedidoCliente;
 import loja.model.Veiculo;
-import loja.util.Pedido;
 
-public class ServerSocketClientes implements Runnable {
+public class ClienteSocketLoja implements Runnable {
     private final int porta;
     private final GerenciadorPedidos gerenciador;
     private volatile boolean rodando = true;
     private ServerSocket servidor;
 
-    public ServerSocketClientes(int porta, GerenciadorPedidos gerenciador) {
+    public ClienteSocketLoja(int porta, GerenciadorPedidos gerenciador) {
         this.porta = porta;
         this.gerenciador = gerenciador;
     }
@@ -47,8 +47,8 @@ public class ServerSocketClientes implements Runnable {
              ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream())) {
             saida.flush();
             Object obj = entrada.readObject();
-            if (obj instanceof Pedido) {
-                Pedido pedido = (Pedido) obj;
+            if (obj instanceof PedidoCliente) {
+                PedidoCliente pedido = (PedidoCliente) obj;
                 System.out.println("Pedido recebido: " + pedido);
                 Veiculo vehicle = gerenciador.processarPedido(pedido);
                 saida.writeObject(vehicle);

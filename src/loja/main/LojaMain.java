@@ -2,14 +2,14 @@ package loja.main;
 
 import loja.Esteira.EsteiraLoja;
 import loja.controle.GerenciadorPedidos;
-import loja.logs.LoggerUtil;
-import loja.socket.ClientSocketFactory;
-import loja.socket.ServerSocketClientes;
+import loja.logger.LoggerUtil;
+import loja.socket.LojaSocketFabrica;
+import loja.socket.ClienteSocketLoja;
 
-public class StoreMain {
+public class LojaMain {
     public static void main(String[] args) throws Exception {
         if (args.length < 4) {
-            System.out.println("Usage: java loja.StoreMain <storeId> <clientPort> <factoryHost> <factoryPort> [bufferCapacity]");
+            System.out.println("Uso: java loja.main.LojaMain <lojaId> <portaClientes> <enderecoFabrica> <portaFabrica> [capacidadeBuffer]");
             return;
         }
         String idLoja = args[0];
@@ -20,9 +20,9 @@ public class StoreMain {
         int tamanhoLote = Math.max(1, capacidadeBuffer);
         EsteiraLoja esteira = new EsteiraLoja(capacidadeBuffer);
         LoggerUtil logger = new LoggerUtil(idLoja);
-        ClientSocketFactory clienteFabrica = new ClientSocketFactory(fabricaEndereco, fabricaPorta, esteira, logger, idLoja, tamanhoLote);
+        LojaSocketFabrica clienteFabrica = new LojaSocketFabrica(fabricaEndereco, fabricaPorta, esteira, logger, idLoja, tamanhoLote);
         GerenciadorPedidos gerenciador = new GerenciadorPedidos(esteira, clienteFabrica, logger, idLoja);
-        ServerSocketClientes serverClientes = new ServerSocketClientes(portaClientes, gerenciador);
+        ClienteSocketLoja serverClientes = new ClienteSocketLoja(portaClientes, gerenciador);
         Thread tFactory = new Thread(clienteFabrica, "ClienteFabrica-" + idLoja);
         Thread tServer = new Thread(serverClientes, "ServerClientes-" + idLoja);
         tFactory.start();

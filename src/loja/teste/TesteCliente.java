@@ -1,16 +1,16 @@
-package loja.socket;
+package loja.teste;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import loja.model.PedidoCliente;
 import loja.model.Veiculo;
-import loja.util.Pedido;
 
-public class TestClient {
+public class TesteCliente {
     public static void main(String[] args) throws Exception {
         if (args.length < 2) {
-            System.out.println("Usage: java loja.TestClient <storeHost> <storePort>");
+            System.out.println("Uso: java loja.teste.TesteCliente <enderecoLoja> <portaLoja>");
             return;
         }
         String endereco = args[0];
@@ -19,7 +19,7 @@ public class TestClient {
              ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
              ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream())) {
             saida.flush();
-            Pedido pedido = new Pedido(Pedido.Type.BUY, "any", "cliente-1");
+            PedidoCliente pedido = new PedidoCliente(PedidoCliente.Type.BUY, "any", "cliente-1");
             saida.writeObject(pedido);
             saida.flush();
             Object resp = entrada.readObject();
