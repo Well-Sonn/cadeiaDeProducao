@@ -1,8 +1,13 @@
 package loja.socket;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+//import java.io.ObjectInputStream;
+//import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import loja.Esteira.EsteiraLoja;
 import loja.logger.LoggerUtil;
@@ -30,42 +35,48 @@ public class LojaSocketFabrica implements Runnable {
     public void shutdown() { rodando = false; }
 
     public int solicitarVeiculos(int quantidade) {
-        int recebidos = 0;
-        try (Socket conexao = new Socket(endereco, porta)) {
-            conexao.setSoTimeout(15000);
-            ObjectOutputStream saida = new ObjectOutputStream(conexao.getOutputStream());
-            saida.flush();
-            ObjectInputStream entrada = new ObjectInputStream(conexao.getInputStream());
-            PedidoFabrica requisicao = new PedidoFabrica(idLoja, quantidade);
-            saida.writeObject(requisicao);
-            saida.flush();
-            for (int i = 0; i < quantidade; i++) {
-                Object obj = entrada.readObject();
-                if (obj == null) break;
-                if (obj instanceof Veiculo) {
-                    Veiculo veiculo = (Veiculo) obj;
-                    try {
-                        esteira.colocar(veiculo);
-                        logger.logRecebimento(veiculo, endereco + ":" + porta);
-                        recebidos++;
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                } else if (obj instanceof String) {
-                    String s = (String) obj;
-                    if ("NONE".equals(s) || "END".equals(s)) {
-                        break;
-                    }
-                } else {
-                    // ignorar desconhecido
-                }
+    int recebidos = 0;
+
+    try (Socket conexao = new Socket(endereco, porta)) {
+        conexao.setSoTimeout(15000);
+
+        BufferedReader entrada = new BufferedReader(
+                new InputStreamReader(conexao.getInputStream()));
+
+        PrintWriter saida = new PrintWriter(
+                conexao.getOutputStream(), true);
+
+        for (int i = 0; i < quantidade; i++) {
+
+            saida.println("REQUEST_VEHICLE");
+
+            String resposta = entrada.readLine();
+
+            if (resposta == null) break;
+
+            if (resposta.startsWith("OK|")) {
+                String dados = resposta.substring(3);
+                String[] partes = dados.split(";");
+
+                List<String> cadeia = new ArrayList<>();
+                cadeia.add("Fabrica");
+
+                Veiculo veiculo = new Veiculo(
+                        partes[1] + "-" + partes[2],
+                        cadeia);
+
+                esteira.colocar(veiculo);
+                logger.logRecebimento(veiculo, endereco + ":" + porta);
+                recebidos++;
             }
-        } catch (Exception e) {
-            System.err.println("ClienteSocketFabrica: erro ao conectar na fábrica: " + e.getMessage());
         }
-        return recebidos;
+
+    } catch (Exception e) {
+        System.err.println("ClienteSocketFabrica: erro ao conectar na fábrica: " + e.getMessage());
     }
+
+    return recebidos;
+}
 
     @Override
     public void run() {
