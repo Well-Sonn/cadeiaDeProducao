@@ -3,21 +3,6 @@ package cliente;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Ponto de entrada do módulo cliente.
- *
- * Uso:
- *   java cliente.ClientMain <host1:port1> <host2:port2> <host3:port3>
- *
- * Exemplo (3 lojas em máquinas distintas):
- *   java cliente.ClientMain 192.168.1.10:6001 192.168.1.11:6001 192.168.1.12:6001
- *
- * Exemplo (teste local, 3 lojas na mesma máquina em portas diferentes):
- *   java cliente.ClientMain localhost:6001 localhost:6002 localhost:6003
- *
- * Cria 20 threads de clientes, cada uma com sua própria Garagem.
- * Toda a sincronização é feita exclusivamente com Semáforos.
- */
 public class ClientMain {
 
     public static final int NUM_CLIENTES = 20;
@@ -32,7 +17,6 @@ public class ClientMain {
             System.exit(1);
         }
 
-        // Parseia endereços das lojas a partir dos argumentos
         List<EnderecoLoja> lojas = new ArrayList<>();
         for (int i = 0; i < args.length; i++) {
             String arg = args[i].trim();
@@ -58,7 +42,6 @@ public class ClientMain {
 
         System.out.println("[ClientMain] Iniciando " + NUM_CLIENTES + " clientes conectando a " + lojas.size() + " loja(s)...");
 
-        // Cria e dispara as 20 threads de clientes
         List<Thread> threads = new ArrayList<>();
         for (int i = 1; i <= NUM_CLIENTES; i++) {
             ClienteThread cliente = new ClienteThread(i, lojas);
@@ -68,7 +51,6 @@ public class ClientMain {
             t.start();
         }
 
-        // Aguarda todos os clientes terminarem
         for (Thread t : threads) {
             try {
                 t.join();
@@ -80,9 +62,6 @@ public class ClientMain {
         System.out.println("[ClientMain] Todos os clientes finalizaram.");
     }
 
-    // ---------------------------------------------------------------------------
-    // Classe auxiliar imutável para encapsular endereço de uma loja
-    // ---------------------------------------------------------------------------
     public static class EnderecoLoja {
         public final int    lojaId;
         public final String host;
