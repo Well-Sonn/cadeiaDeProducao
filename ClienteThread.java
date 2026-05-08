@@ -1,7 +1,7 @@
 package cliente;
 
-import loja.Pedido;
-import loja.Vehicle;
+import loja.model.PedidoCliente;
+import loja.model.Veiculo;
 
 import java.util.List;
 import java.util.Random;
@@ -85,7 +85,7 @@ public class ClienteThread implements Runnable {
     }
 
     private boolean tentarCompra(ClientMain.EnderecoLoja loja, String model) {
-        Vehicle veiculo = ConexaoLoja.comprar(loja.host, loja.porta, model, clienteStringId);
+        Veiculo veiculo = ConexaoLoja.comprar(loja.host, loja.porta, model, clienteStringId);
 
         if (veiculo == null) {
             return false;

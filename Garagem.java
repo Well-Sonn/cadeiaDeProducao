@@ -1,6 +1,6 @@
 package cliente;
 
-import loja.Vehicle;
+import loja.model.Veiculo;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,7 +9,7 @@ import java.util.concurrent.Semaphore;
 
 public class Garagem {
 
-    private final Vehicle[] buffer;
+    private final Veiculo[] buffer;
     private final int       capacity;
     private int             head  = 0;  
     private int             tail  = 0;  
@@ -23,13 +23,13 @@ public class Garagem {
     public Garagem(int capacity) {
         if (capacity <= 0) throw new IllegalArgumentException("Capacidade deve ser > 0");
         this.capacity = capacity;
-        this.buffer   = new Vehicle[capacity];
+        this.buffer   = new Veiculo[capacity];
         this.mutex    = new Semaphore(1, true);        
         this.espacos  = new Semaphore(capacity, true);  
         this.veiculos = new Semaphore(0, true);        
     }
 
-    public void adicionar(Vehicle v) throws InterruptedException {
+    public void adicionar(Veiculo v) throws InterruptedException {
         if (v == null) throw new IllegalArgumentException("Veiculo nao pode ser null");
 
         espacos.acquire();
@@ -46,11 +46,11 @@ public class Garagem {
     }
 
 
-    public Vehicle retirar() throws InterruptedException {
+    public Veiculo retirar() throws InterruptedException {
         veiculos.acquire();
         mutex.acquire();
 
-        Vehicle v;
+        Veiculo v;
         try {
             v          = buffer[head];
             buffer[head] = null;   
@@ -80,12 +80,12 @@ public class Garagem {
         return tamanho() == capacity;
     }
 
-    public List<Vehicle> listar() {
+    public List<Veiculo> listar() {
         mutex.acquireUninterruptibly();
         try {
-            List<Vehicle> lista = new ArrayList<>(count);
+            List<Veiculo> lista = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
-                Vehicle v = buffer[(head + i) % capacity];
+                Veiculo v = buffer[(head + i) % capacity];
                 if (v != null) lista.add(v);
             }
             return Collections.unmodifiableList(lista);

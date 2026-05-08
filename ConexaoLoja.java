@@ -1,7 +1,7 @@
 package cliente;
 
-import loja.Pedido;
-import loja.Vehicle;
+import loja.model.PedidoCliente;
+import loja.model.Veiculo;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -23,7 +23,7 @@ public class ConexaoLoja {
 
     private ConexaoLoja() {}
 
-    public static Vehicle comprar(String host, int porta, String model, String clienteId) {
+    public static Veiculo comprar(String host, int porta, String model, String clienteId) {
         try {
             semConexoesGlobais.acquire();
         } catch (InterruptedException e) {
@@ -39,7 +39,7 @@ public class ConexaoLoja {
         }
     }
 
-    private static Vehicle executarCompra(String host, int porta, String model, String clienteId) {
+    private static Veiculo executarCompra(String host, int porta, String model, String clienteId) {
         try (Socket socket = new Socket()) {
 
             socket.connect(new java.net.InetSocketAddress(host, porta), CONNECT_TIMEOUT_MS);
@@ -50,16 +50,16 @@ public class ConexaoLoja {
 
                 out.flush();
 
-                Pedido pedido = new Pedido(Pedido.Type.BUY, model, clienteId);
+                PedidoCliente pedido = new PedidoCliente(PedidoCliente.Type.BUY, model, clienteId);
                 out.writeObject(pedido);
                 out.flush();
 
                 Object resposta = in.readObject();
 
-                if (resposta instanceof Vehicle) {
-                    Vehicle v = (Vehicle) resposta;
+                if (resposta instanceof Veiculo) {
+                    Veiculo v = (Veiculo) resposta;
                     System.out.printf("[ConexaoLoja][%s] Veiculo recebido: id=%s modelo=%s de %s:%d%n",
-                            clienteId, v.getId(), v.getModel(), host, porta);
+                            clienteId, v.getId(), v.getModelo(), host, porta);
                     return v;
                 } else {
                     System.out.printf("[ConexaoLoja][%s] Loja %s:%d sem estoque para modelo=%s.%n",
